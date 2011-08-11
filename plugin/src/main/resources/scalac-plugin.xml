@@ -1,4 +1,4 @@
 <plugin>
   <name>knight</name>
-  <classname>com.monterail.knight.KnightPlugin</classname>
+  <classname>com.monterail.knight.plugin.KnightPlugin</classname>
 </plugin>

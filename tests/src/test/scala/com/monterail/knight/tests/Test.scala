@@ -9,8 +9,8 @@ import com.monterail.knight.annotation._
 case class Foo(list: List[Int] = Nil)
 
 class Test extends FlatSpec with ShouldMatchers {
-    "it should return default value if null" in {
+    "@knight annotation" should "protect your code from nulls" in {
         val foo = Foo(null)
-        foo.list should be (Nil)
+        foo.list should equal (Nil)
     }
 }
