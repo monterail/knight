@@ -35,6 +35,8 @@ object KnightBuild extends Build {
                 "-Xplugin:%s" format art._2.getAbsolutePath
             },
             scalacOptions += "-Xplugin-require:knight",
+            // scalacOptions += "-Ydebug",
+            // scalacOptions += "-Ybrowse:knight-generator",
             libraryDependencies += scalatest % "test"
         ) ++ inConfig(Test)(Seq(
             test <<= test.dependsOn(packageBin in plugin, clean)

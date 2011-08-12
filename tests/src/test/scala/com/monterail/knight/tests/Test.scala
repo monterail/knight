@@ -9,8 +9,8 @@ import com.monterail.knight.annotation._
 case class Lord(a: String, b: String = "Default B", c: String = "Default C")
 case class Fool(a: String, b: String = "Default B", c: String = "Default C")
 
-// @knight
-// case class Foo(a: Map[Any, Any] = Map(1 -> 2, "f" -> new Lord("xx")))
+@knight
+case class Foo(a: Map[Any, Any] = Map(1 -> 2, "f" -> new Lord("xx")))
 
 
 class Test extends FlatSpec with ShouldMatchers {

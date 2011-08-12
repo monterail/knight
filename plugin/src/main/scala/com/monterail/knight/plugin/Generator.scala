@@ -6,13 +6,14 @@ import nsc.plugins.PluginComponent
 import nsc.transform.{Transform, TypingTransformers}
 import nsc.symtab.Flags._
 import nsc.ast.TreeDSL
+import nsc.symtab
 
 class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponent with Transform with TypingTransformers with TreeDSL {
     import global._
     import definitions._
 
     // PluginComponent settings
-    val runsAfter = List("typer")
+    val runsAfter = List("refchecks")
 
     val phaseName = "knight-generator"
 
@@ -39,7 +40,6 @@ class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponen
                case pd @ PackageDef(_, stats) =>
                     val modules = collectModules(stats)
 
-                    debug("stats", stats)
                     val newStats = stats collect {
                         case cd @ ClassDef(_, _, _, tpl) if shouldProtect(cd.symbol) =>
                             val module = modules(cd.symbol)
@@ -57,14 +57,22 @@ class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponen
                                 case (df @ DefDef(_, name, _, _, _, rhs), Some(index)) =>
                                     applyDefaults.get("apply$default$" + (index+1)) match {
                                         case Some(default) =>
-                                            val newRhs = If(
-                                                 Apply(
-                                                     Select(rhs, newTermName("!=")),
-                                                     List(Literal(Constant(null)))
-                                                 ),
-                                                 rhs,
-                                                 default
-                                             )
+                                            val owner0 = localTyper.context1.enclClass.owner
+                                            localTyper.context1.enclClass.owner = df.symbol.moduleClass
+
+                                            val newRhs = localTyper typed {
+                                                If(
+                                                     Apply(
+                                                         Select(rhs, newTermName(scala.reflect.NameTransformer.encode("!="))),
+                                                         List(Literal(Constant(null)))
+                                                     ),
+                                                     rhs,
+                                                     default
+                                                 )
+
+                                             }
+
+                                             localTyper.context1.enclClass.owner = owner0
 
                                              println("New accessor code for: " + name)
                                              treeCopy.DefDef(df, df.mods, df.name, df.tparams, df.vparamss, df.tpt, newRhs)
@@ -77,12 +85,11 @@ class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponen
                             }
 
                             val newTpl = treeCopy.Template(tpl, tpl.parents, tpl.self, newBody)
+
                             treeCopy.ClassDef(cd, cd.mods, cd.name, cd.tparams, newTpl)
 
                         case x => x
                     }
-
-                    debug("newStats", newStats)
 
                     treeCopy.PackageDef(pd, pd.pid, newStats)
                 case _ =>
@@ -92,15 +99,9 @@ class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponen
             super.transform(newTree)
         }
 
-        def collectModules(trees: List[Tree]) = (Map[Symbol, ModuleDef]() /: trees) {
-            case (xs, md @ ModuleDef(_, _, _)) => xs + (md.symbol.companionClass -> md)
+        def collectModules(trees: List[Tree]) = (Map[Symbol, ClassDef]() /: trees) {
+            case (xs, md @ ClassDef(_, _, _, _)) if md.symbol.isModuleClass => xs + (md.symbol.companionClass -> md)
             case (xs, _) => xs
         }
-    }
-
-    def debug(name: String, x: Any){
-        val f = new java.io.File("/tmp/" + name)
-        val p = new java.io.PrintWriter(f)
-        try { p.println(x) } finally { p.close() }
     }
 }
