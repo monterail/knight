@@ -36,6 +36,8 @@ object KnightBuild extends Build {
             },
             scalacOptions += "-Xplugin-require:knight",
             libraryDependencies += scalatest % "test"
-        )
+        ) ++ inConfig(Test)(Seq(
+            test <<= test.dependsOn(packageBin in plugin, clean)
+        ))
     ) dependsOn(plugin)
 }
