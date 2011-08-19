@@ -14,7 +14,7 @@ case class Foo(a: Map[Any, Any] = Map(1 -> 2, "f" -> new Lord("xx")))
 
 
 class Test extends FlatSpec with ShouldMatchers {
-    "@knight annotation" should "protect your lords" in {
+    "@knight annotation" should "protect lords" in {
         val lord = Lord(null, null, null)
         lord.a should equal (null)
         lord.b should equal ("Default B")

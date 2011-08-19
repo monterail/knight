@@ -55,7 +55,8 @@ class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponen
                                 case _ => false
                             } collect {
                                 case (df @ DefDef(_, name, _, _, _, rhs), Some(index)) =>
-                                    applyDefaults.get("apply$default$" + (index+1)) match {
+                                    val key = "apply$default$" + (index+1)
+                                    applyDefaults get key match {
                                         case Some(default) =>
                                             val owner0 = localTyper.context1.enclClass.owner
                                             localTyper.context1.enclClass.owner = df.symbol.moduleClass
@@ -74,11 +75,9 @@ class Generator(plugin: KnightPlugin, val global: Global) extends PluginComponen
 
                                              localTyper.context1.enclClass.owner = owner0
 
-                                             println("New accessor code for: " + name)
                                              treeCopy.DefDef(df, df.mods, df.name, df.tparams, df.vparamss, df.tpt, newRhs)
 
                                          case None =>
-                                             println("No default value for accessor: " + name)
                                              df
                                    }
                                 case (x, _) => x
