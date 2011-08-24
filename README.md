@@ -1,5 +1,5 @@
 # Knight
-scalac plugin that fight with case classes with default arguments, Java Refleciton API and NullPointerExpection problem
+scalac plugin that fights with case classes with default arguments, Java Refleciton API and NullPointerExpection problem
 
 ## Problem
 Having a case class with default constructor arguments like:
@@ -54,7 +54,7 @@ addCompilerPlugin("com.monterail" % "knight" % "0.1.0")
 
 
 ## Internals
-For describe `case class A(...)` the compiler generates code similar to this:
+For described `case class A(...)` the compiler generates code similar to this:
 
 ```scala
 
